@@ -2203,82 +2203,82 @@
         {
             "mimeType" : "image/jpeg",
             "name" : "engin-akyurt-in8CoZMm8io-unsplash",
-            "uri" : "textures/engin-akyurt-in8CoZMm8io-unsplash.jpg"
+            "uri" : "textures/engin-akyurt-in8CoZMm8io-unsplash.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "rust",
-            "uri" : "textures/rust.jpg"
+            "uri" : "textures/rust.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "carpet2",
-            "uri" : "textures/carpet2.jpg"
+            "uri" : "textures/carpet2.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "carpet3",
-            "uri" : "textures/carpet3.jpg"
+            "uri" : "textures/carpet3.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "office wall_2",
-            "uri" : "textures/office%20wall_2.jpg"
+            "uri" : "textures/office%20wall_2.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "office wall_3",
-            "uri" : "textures/office%20wall_3.jpg"
+            "uri" : "textures/office%20wall_3.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "office wall",
-            "uri" : "textures/office%20wall.jpg"
+            "uri" : "textures/office%20wall.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "takis-politis-FmeJ2pV6YsU-unsplash",
-            "uri" : "textures/takis-politis-FmeJ2pV6YsU-unsplash.jpg"
+            "uri" : "textures/takis-politis-FmeJ2pV6YsU-unsplash.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "Crate_Material_BaseColor",
-            "uri" : "textures/Crate_Material_BaseColor.jpg"
+            "uri" : "textures/Crate_Material_BaseColor.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "elevator_side_1",
-            "uri" : "textures/elevator_side_1.jpg"
+            "uri" : "textures/elevator_side_1.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "elevator_side_3",
-            "uri" : "textures/elevator_side_3.jpg"
+            "uri" : "textures/elevator_side_3.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "elevator_side_4",
-            "uri" : "textures/elevator_side_4.jpg"
+            "uri" : "textures/elevator_side_4.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "adam-niescioruk-bWiH0PDTB-g-unsplash",
-            "uri" : "textures/adam-niescioruk-bWiH0PDTB-g-unsplash.jpg"
+            "uri" : "textures/adam-niescioruk-bWiH0PDTB-g-unsplash.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "ciel_office_3",
-            "uri" : "textures/ciel_office_3.jpg"
+            "uri" : "textures/ciel_office_3.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "ciel_office",
-            "uri" : "textures/ciel_office.jpg"
+            "uri" : "textures/ciel_office.webp"
         },
         {
             "mimeType" : "image/jpeg",
             "name" : "ciel_office_1",
-            "uri" : "textures/ciel_office_1.jpg"
+            "uri" : "textures/ciel_office_1.webp"
         }
     ],
     "accessors" : [
