@@ -12,6 +12,7 @@
 </head>
 
 <body>
+    <p id="stuff"></p>
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
         import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
@@ -47,7 +48,6 @@
             camera.add(new THREE.PointLight(0x9E8B72, .3));
         }
 
-        const loader = new GLTFLoader();
         let offsetY = 0;
         let offsetX = 0;
         document.onkeydown = e => {
@@ -120,6 +120,37 @@
         }
 
         let slot = 1;
+        const manager = new THREE.LoadingManager();
+
+        let log = (stuff) => {
+            document.getElementById("stuff").innerHTML = stuff;
+        }
+        manager.onStart = function (url, itemsLoaded, itemsTotal) {
+
+            log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+
+        };
+
+        manager.onLoad = function () {
+
+            log('Loading complete!');
+
+        };
+
+
+        manager.onProgress = function (url, itemsLoaded, itemsTotal) {
+
+            log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+
+        };
+
+        manager.onError = function (url) {
+
+            log('There was an error loading ' + url);
+
+        };
+        const loader = new GLTFLoader(manager);
+
         Promise.all(["./tunnel_3.gltf", "./tunnel_3_right.gltf"].map(load3DAsset)).then((assets) => {
 
             console.log("DONE!!!")
