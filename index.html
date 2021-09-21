@@ -7,6 +7,12 @@
     <style>
         body {
             margin: 0;
+            overflow: hidden;
+        }
+        canvas{
+            position: fixed;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
@@ -35,7 +41,7 @@
         function refeshScene() {
             scene.clear();
             scene.add(camera);
-            camera.add(new THREE.PointLight(0x9E8B72, .3));
+            camera.add(new THREE.PointLight(0x9E8B72, 3));
         }
 
         let offsetY = 0;
