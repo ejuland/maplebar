@@ -47,6 +47,11 @@ History
             left: 0;
         }
     </style>
+    <meta name="viewport" content=" user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon.webp">
+    <meta name="apple-mobile-web-app-title" content="Project Demo">
 </head>
 
 <body>
@@ -74,7 +79,7 @@ History
         var material = new THREE.SpriteMaterial({ map: map, color: 0xffffff });
         var sprite = new THREE.Sprite(material);
         //sprite.position.set(0,0,-1)
-        
+
         function refeshScene() {
             scene.clear();
             scene.add(camera);
