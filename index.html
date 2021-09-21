@@ -23,21 +23,11 @@
 
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+      
         document.body.appendChild(renderer.domElement);
 
         // let light = new THREE.HemisphereLight(0xffeeb1, 0x080820, .01);
         // scene.add(light);
-        const light = new THREE.SpotLight(0x9E8B72, 3);
-        light.position.set(-50, 50, 50);
-        light.castShadow = false;
-        light.shadow.bias = -0.0001;
-        light.shadow.mapSize.width = 1024;
-        light.shadow.mapSize.height = 1024;
-        camera.add(light.target);
-        light.target.position.set(0, 0, -1);
         // light.position.copy(camera.position); // and reset spotlight position if camera moves
 
         /////////
