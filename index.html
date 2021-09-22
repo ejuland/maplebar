@@ -79,16 +79,12 @@
             gradient.addColorStop(0, 'transparent');
 
             // gradient.addColorStop(.9, 'white');
-            gradient.addColorStop(1, '#000000fc');
+            gradient.addColorStop(1, '#000000fe');
 
             // Set the fill style and draw a rectangle
             CTX.fillStyle = gradient;
             CTX.fillRect(0, 0, window.innerWidth, window.innerHeight);
         }
-
-
-        drawBlock();
-
 
         // let light = new THREE.HemisphereLight(0xffeeb1, 0x080820, .01);
         // scene.add(light);
@@ -97,15 +93,18 @@
         /////////
 
 
-
+        let refeshing = false;
+        camera.add(new THREE.PointLight(0xdd9c22, .3));
         function refeshScene() {
+            refeshing = true;
             scene.clear();
-            scene.add(camera);
+            renderer.render(scene, camera);
             camera.position.set(0, 0, 0)
             targetPosition = camera.position.clone();
-            camera.add(new THREE.PointLight(0xdd9c22, .3));
-            cameraX = 0;
+            scene.add(camera);
             offsetX = 0;
+            cameraX = 0;
+            refeshing = false;
 
         }
 
@@ -123,7 +122,12 @@
                     });
                     break;
                 case "ArrowDown":
-                    offsetY += 0.002;
+                    playTransition(2, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[0])
+                        renderScene(GameAssets[0]);
+                        return true;
+                    });
                     break;
                 case "ArrowLeft":
                     playTransition(3, () => {
@@ -308,15 +312,16 @@
 
         const smoothness = 0.2 // 0 to 1 only
 
-        const focousOnFloor = () => {
-            if (py < window.innerHeight)
-                py += 5;
-            return (py > window.innerHeight)
+        const focousOnFloor = (point = maxFlashlightRadius / 2) => {
+
+
+            if (py < window.innerHeight - point)
+                py += 20;
+            return (py > window.innerHeight - point) && shrinkFlashlight(50)
 
         }
 
         const shrinkFlashlight = (amount = 50) => {
-
             if (radius1 > 50) {
                 radius1 -= 5;
                 radius2 -= 5;
@@ -337,27 +342,23 @@
             straight: [
                 () => {
                     MoveCameraToPoint(0, 0, 2)
-                    return focousOnFloor() && reachedPoint(targetPosition, camera.position);
+                    return shrinkFlashlight(0) && reachedPoint(targetPosition, camera.position);
                 }, () => {
                     MoveCameraToPoint(0, 0, 4)
-                    return reachedPoint(targetPosition, camera.position) && shrinkFlashlight();
+                    return reachedPoint(targetPosition, camera.position)
                 }
             ],
             right: [
                 () => {
-                    return focousOnFloor() && delayed(250)
-                }, () => {
                     MoveCameraToPoint(0, 0, 2)
                     let delau = delayed(250);
                     if (delau)
                         cameraX = Math.PI / -2;
                     console.log(cameraInPosition());
-                    return  reachedPoint(targetPosition, camera.position) && cameraInPosition();
-                }, () => {
-                    return shrinkFlashlight(100) && delayed(250)
+                    return reachedPoint(targetPosition, camera.position) && cameraInPosition() && delau;
                 }, () => {
                     MoveCameraToPoint(-2, 0, 2)
-                    return reachedPoint(targetPosition, camera.position);
+                    return shrinkFlashlight(0) && reachedPoint(targetPosition, camera.position);
                 }
 
             ],
@@ -368,11 +369,10 @@
                     if (delau)
                         cameraX = Math.PI / 2;
                     console.log(cameraInPosition());
-                    return reachedPoint(targetPosition, camera.position) && cameraInPosition();
+                    return reachedPoint(targetPosition, camera.position) && cameraInPosition() && delau;
                 }, () => {
-
                     MoveCameraToPoint(2, 0, 2)
-                    return focousOnFloor() && shrinkFlashlight() && reachedPoint(targetPosition, camera.position);
+                    return shrinkFlashlight(0) && reachedPoint(targetPosition, camera.position);
                 }
             ],
             uturn: [
@@ -382,9 +382,8 @@
                 },
                 () => {
                     cameraX = Math.PI;
-                    let delau = delayed(2000);
                     console.log(cameraInPosition());
-                    return cameraInPosition() && delau;
+                    return shrinkFlashlight() && cameraInPosition();
                 }
             ],
         };
@@ -402,15 +401,17 @@
                 case 3:
                     transitionInstructions = [].concat(...transitions.left, callback);
                     break;
+                case 2:
+                    transitionInstructions = [].concat(...transitions.uturn, callback);
+                    break;
             }
             console.log(transitionInstructions);
             transitionInstructions.push(() => {
                 radius2 += 5;
-                py -= 5;
                 if (radius2 > maxFlashlightRadius)
                     radius2 = maxFlashlightRadius;
                 radius1 = radius2 * .65;
-                return radius2 >= maxFlashlightRadius && py < window.innerHeight / 2;
+                return radius2 >= maxFlashlightRadius;
             });
         }
 
@@ -420,6 +421,8 @@
         const cameraInPosition = () => (offsetX > cameraX - .05) && (offsetX < cameraX + .05);
         function animate() {
             requestAnimationFrame(animate);
+            if (refeshing)
+                return;
             if (!cameraInPosition()) {
                 if (offsetX < cameraX - .05)
                     offsetX += smoothness / 2
