@@ -27,7 +27,7 @@
     </style>
     <meta name="viewport" content=" user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="hidden">
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon.webp">
     <canvas id="screen">screen</canvas>
     <meta name="apple-mobile-web-app-title" content="Project Demo">
@@ -53,21 +53,24 @@
         CTX.canvas.width = window.innerWidth;
         CTX.canvas.height = window.innerHeight;
 
+        let inTransition = false;
 
         let offsetY = 0;
-        let offsetX = 0;
-        let px = 0;
-        let py = 0;
+        let rotationX = 0;
+        let px = window.innerWidth / 2;
+        let py = window.innerHeight / 2;
 
         function clearScreen() {
             CTX.clearRect(0, 0, window.innerWidth, window.innerHeight);
         }
 
+        let radius1 = 130;
+        let radius2 = 200;
         function drawBlock() {
             //var gradient = CTX.createRadialGradient(px, py, 50, px - 50, py - 50, 70);
             var gradient = CTX.createRadialGradient(
-                px + 10, py + 10, 130,
-                px, py, 200
+                px + 10, py + 10, radius1,
+                px, py, radius2
             );
 
 
@@ -76,7 +79,7 @@
             gradient.addColorStop(0, 'transparent');
 
             // gradient.addColorStop(.9, 'white');
-            gradient.addColorStop(1, '#000000fa');
+            gradient.addColorStop(1, '#000000fc');
 
             // Set the fill style and draw a rectangle
             CTX.fillStyle = gradient;
@@ -98,41 +101,84 @@
         function refeshScene() {
             scene.clear();
             scene.add(camera);
+            camera.position.set(0, 0, 0)
+            targetPosition = camera.position.clone();
             camera.add(new THREE.PointLight(0xdd9c22, .3));
+            cameraX = 0;
+            offsetX = 0;
+
         }
 
-
+        let maxFlashlightRadius = 200;
         document.onkeydown = e => {
+            if (inTransition)
+                return false;
             switch (e.code) {
                 case "ArrowUp":
-                    offsetY -= .002;
+                    playTransition(0, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[0])
+                        renderScene(GameAssets[0]);
+                        return true;
+                    });
                     break;
                 case "ArrowDown":
                     offsetY += 0.002;
                     break;
                 case "ArrowLeft":
-                    offsetX -= .002;
+                    playTransition(3, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[0])
+                        renderScene(GameAssets[0]);
+                        return true;
+                    });
                     break;
                 case "ArrowRight":
-                    offsetX += .002;
+                    playTransition(1, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[0])
+                        renderScene(GameAssets[0]);
+                        return true;
+                    });
                     break;
             }
-            console.log(offsetX, offsetY);
+            console.log(rotationX, offsetY);
 
         }
 
+        let targetPosition = camera.position.clone();
+        function MoveCameraToPoint(x, y, z) {
+            targetPosition = camera.position.clone();
+            targetPosition.z = -z;
+            targetPosition.y = -y;
+            targetPosition.x = -x;
+        }
+        let turnRight = false;
+        let turnLeft = false;
+        document.addEventListener("touchend", () => {
+            turnRight = false;
+            turnLeft = false;
+        }, false);
         document.addEventListener("touchmove", (e) => {
+            if (inTransition)
+                return false;
             let X = e.touches[0].clientX;
             let Y = e.touches[0].clientY;
             px = X;
             py = Y;
+            if (!cameraInPosition())
+                return;
             let w = (window.innerWidth);
             let h = (window.innerHeight);
-            offsetX = (X / w) - .5;
-            //offsetY = (Y / (h / 2)) - .5;
 
+
+            rotationX = (X / w) - .5;
+            //offsetY = (Y / (h / 2)) - .5;   
             console.log((X / w));
-            console.log(offsetX, offsetY);
+            console.log(rotationX, offsetY);
+
+
+
 
         }, false);
         // const dracoLoader = new DRACOLoader();
@@ -155,7 +201,6 @@
             scene.clear();
             // renderer.render(scene, gltf.cameras[0]);
         }
-
 
         function renderScene(gltf) {
             refeshScene();
@@ -206,6 +251,7 @@
         };
         const loader = new GLTFLoader(manager);
 
+        let GameAssets = [];
         Promise.all(["./tunnel_3.gltf"].map(load3DAsset)).then((assets) => {
 
             console.log("DONE!!!")
@@ -213,7 +259,7 @@
                 gltf.name = index + "obj";
                 return gltf;
             });
-
+            GameAssets = [].concat(...assets);
             console.log(assets[slot])
             renderScene(assets[slot]);
             let update = () => {
@@ -233,25 +279,168 @@
         }, console.log);
 
 
-        let targetPosition = camera.position.clone();
-        const smoothness = 0.01 // 0 to 1 only
-        function MoveCameraToPoint(x, y, z) {
-            targetPosition.z -= z;
-            targetPosition.y -= y;
-            targetPosition.x -= x;
+        function reachedPoint(pos, pos2, epsilon = Number.EPSILON) {
+            console.log(pos, pos2)
+            return (
+                (Math.ceil(Math.abs(pos.x) * 100) / 100 - Math.ceil(Math.abs(pos2.x) * 100) / 100 <= 0.005) &&
+                (Math.ceil(Math.abs(pos.z) * 100) / 100 - Math.ceil(Math.abs(pos2.z) * 100) / 100 <= 0.005));
         }
 
-        setTimeout(()=>MoveCameraToPoint(0, 0, 2), 5000);
 
+        let delayOver = false;
+        let setDelay = false;
+        let delayed = (time) => {
+            if (!delayOver) {
+                if (!setDelay) {
+                    setDelay = true;
+                    setTimeout(() => {
+                        delayOver = true;
+                    }, time);
+                }
+            }
+            else {
+                delayOver = false;
+                setDelay = false;
+                console.log("DONE");
+                return true;
+            }
+        }
+
+        const smoothness = 0.2 // 0 to 1 only
+
+        const focousOnFloor = () => {
+            if (py < window.innerHeight)
+                py += 5;
+            return (py > window.innerHeight)
+
+        }
+
+        const shrinkFlashlight = (amount = 50) => {
+
+            if (radius1 > 50) {
+                radius1 -= 5;
+                radius2 -= 5;
+            } else {
+                radius1--;
+                radius2--;
+            }
+            if (radius2 < 0) {
+                radius2 = 0;
+            }
+            if (radius1 < 0) {
+                radius1 = 0;
+            }
+            return radius1 <= amount
+        };
+
+        const transitions = {
+            straight: [
+                () => {
+                    MoveCameraToPoint(0, 0, 2)
+                    return focousOnFloor() && reachedPoint(targetPosition, camera.position);
+                }, () => {
+                    MoveCameraToPoint(0, 0, 4)
+                    return reachedPoint(targetPosition, camera.position) && shrinkFlashlight();
+                }
+            ],
+            right: [
+                () => {
+                    return focousOnFloor() && delayed(250)
+                }, () => {
+                    MoveCameraToPoint(0, 0, 2)
+                    let delau = delayed(250);
+                    if (delau)
+                        cameraX = Math.PI / -2;
+                    console.log(cameraInPosition());
+                    return  reachedPoint(targetPosition, camera.position) && cameraInPosition();
+                }, () => {
+                    return shrinkFlashlight(100) && delayed(250)
+                }, () => {
+                    MoveCameraToPoint(-2, 0, 2)
+                    return reachedPoint(targetPosition, camera.position);
+                }
+
+            ],
+            left: [
+                () => {
+                    MoveCameraToPoint(0, 0, 2)
+                    let delau = delayed(250);
+                    if (delau)
+                        cameraX = Math.PI / 2;
+                    console.log(cameraInPosition());
+                    return reachedPoint(targetPosition, camera.position) && cameraInPosition();
+                }, () => {
+
+                    MoveCameraToPoint(2, 0, 2)
+                    return focousOnFloor() && shrinkFlashlight() && reachedPoint(targetPosition, camera.position);
+                }
+            ],
+            uturn: [
+                () => {
+                    MoveCameraToPoint(0, 0, 1)
+                    return delayed(1000) && reachedPoint(targetPosition, camera.position);
+                },
+                () => {
+                    cameraX = Math.PI;
+                    let delau = delayed(2000);
+                    console.log(cameraInPosition());
+                    return cameraInPosition() && delau;
+                }
+            ],
+        };
+
+        let transitionInstructions = [];
+
+        function playTransition(dir, callback) {
+            switch (dir) {
+                case 0:
+                    transitionInstructions = [].concat(...transitions.straight, callback);
+                    break;
+                case 1:
+                    transitionInstructions = [].concat(...transitions.right, callback);
+                    break;
+                case 3:
+                    transitionInstructions = [].concat(...transitions.left, callback);
+                    break;
+            }
+            console.log(transitionInstructions);
+            transitionInstructions.push(() => {
+                radius2 += 5;
+                py -= 5;
+                if (radius2 > maxFlashlightRadius)
+                    radius2 = maxFlashlightRadius;
+                radius1 = radius2 * .65;
+                return radius2 >= maxFlashlightRadius && py < window.innerHeight / 2;
+            });
+        }
+
+        // setTimeout(() => MoveCameraToPoint(0, 0, 2), 5000);
+        let offsetX = 0;
+        let cameraX = 0;
+        const cameraInPosition = () => (offsetX > cameraX - .05) && (offsetX < cameraX + .05);
         function animate() {
             requestAnimationFrame(animate);
-            camera.rotation.y = -offsetX;
-            camera.rotation.x = -offsetY;
+            if (!cameraInPosition()) {
+                if (offsetX < cameraX - .05)
+                    offsetX += smoothness / 2
+                else if (offsetX > cameraX + .05)
+                    offsetX -= smoothness / 2
+            }
+
+            camera.rotation.y = -rotationX + offsetX;
+            camera.rotation.x = -offsetY - offsetY;
             // light.position.set(
             //     camera.position.x + 0,
             //     camera.position.y + .5,
             //     camera.position.z + 10,
             // );
+            if (transitionInstructions.length > 0) {
+                inTransition = true;
+                if (transitionInstructions[0]())
+                    transitionInstructions.shift();
+            }
+            else
+                inTransition = false;
             camera.position.lerp(targetPosition, smoothness);
             renderer.render(scene, camera);
             clearScreen();
