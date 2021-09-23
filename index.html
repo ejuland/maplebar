@@ -116,32 +116,32 @@
                 case "ArrowUp":
                     playTransition(0, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[0])
-                        renderScene(GameAssets[0]);
+                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
                         return true;
                     });
                     break;
                 case "ArrowDown":
                     playTransition(2, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[0])
-                        renderScene(GameAssets[0]);
+                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
                         return true;
                     });
                     break;
                 case "ArrowLeft":
                     playTransition(3, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[0])
-                        renderScene(GameAssets[0]);
+                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
                         return true;
                     });
                     break;
                 case "ArrowRight":
                     playTransition(1, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[0])
-                        renderScene(GameAssets[0]);
+                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
                         return true;
                     });
                     break;
@@ -220,7 +220,7 @@
             gltf.scene.position.y = -1;
             gltf.scene.position.x = 0;
             gltf.scene.position.z = 1;
-            renderer.render(scene, gltf.cameras[0]);
+            //renderer.render(scene, gltf.cameras[0]);
         }
 
         let slot = 0;
@@ -256,7 +256,12 @@
         const loader = new GLTFLoader(manager);
 
         let GameAssets = [];
-        Promise.all(["./tunnel_3.gltf"].map(load3DAsset)).then((assets) => {
+        Promise.all([
+            "./4w.gltf",
+            "./dead.gltf",
+            "./right.gltf",
+            "./straight.gltf"
+        ].map(load3DAsset)).then((assets) => {
 
             console.log("DONE!!!")
             assets = assets.map((gltf, index) => {
@@ -310,21 +315,21 @@
             }
         }
 
-        const smoothness = 0.2 // 0 to 1 only
+        const smoothness = 0.09 // 0 to 1 only
 
         const focousOnFloor = (point = maxFlashlightRadius / 2) => {
 
 
             if (py < window.innerHeight - point)
-                py += 20;
-            return (py > window.innerHeight - point) && shrinkFlashlight(50)
+                py += 10;
+            return (py > window.innerHeight - point) && shrinkFlashlight(70, 50)
 
         }
 
-        const shrinkFlashlight = (amount = 50) => {
+        const shrinkFlashlight = (amount = 50, rate = 20) => {
             if (radius1 > 50) {
-                radius1 -= 5;
-                radius2 -= 5;
+                radius1 -= rate;
+                radius2 -= rate;
             } else {
                 radius1--;
                 radius2--;
@@ -343,36 +348,29 @@
                 () => {
                     MoveCameraToPoint(0, 0, 2)
                     return shrinkFlashlight(0) && reachedPoint(targetPosition, camera.position);
-                }, () => {
-                    MoveCameraToPoint(0, 0, 4)
-                    return reachedPoint(targetPosition, camera.position)
-                }
+                },
             ],
             right: [
                 () => {
-                    MoveCameraToPoint(0, 0, 2)
-                    let delau = delayed(250);
-                    if (delau)
-                        cameraX = Math.PI / -2;
+                    MoveCameraToPoint(0, 0, 2.5)
+
                     console.log(cameraInPosition());
-                    return reachedPoint(targetPosition, camera.position) && cameraInPosition() && delau;
+                    return reachedPoint(targetPosition, camera.position);
                 }, () => {
-                    MoveCameraToPoint(-2, 0, 2)
-                    return shrinkFlashlight(0) && reachedPoint(targetPosition, camera.position);
+                    cameraX = Math.PI / -2;
+                    return shrinkFlashlight() && cameraInPosition();
                 }
 
             ],
             left: [
                 () => {
-                    MoveCameraToPoint(0, 0, 2)
-                    let delau = delayed(250);
-                    if (delau)
-                        cameraX = Math.PI / 2;
+                    MoveCameraToPoint(0, 0, 2.5)
+
                     console.log(cameraInPosition());
-                    return reachedPoint(targetPosition, camera.position) && cameraInPosition() && delau;
+                    return reachedPoint(targetPosition, camera.position);
                 }, () => {
-                    MoveCameraToPoint(2, 0, 2)
-                    return shrinkFlashlight(0) && reachedPoint(targetPosition, camera.position);
+                    cameraX = Math.PI / 2;
+                    return shrinkFlashlight() && cameraInPosition();
                 }
             ],
             uturn: [
@@ -391,27 +389,32 @@
         let transitionInstructions = [];
 
         function playTransition(dir, callback) {
+            let buffer = () => {
+                return delayed(1500);
+            };
             switch (dir) {
                 case 0:
-                    transitionInstructions = [].concat(...transitions.straight, callback);
+                    transitionInstructions = [].concat(...transitions.straight, callback, buffer);
                     break;
                 case 1:
-                    transitionInstructions = [].concat(...transitions.right, callback);
+                    transitionInstructions = [].concat(...transitions.right, callback, buffer);
                     break;
                 case 3:
-                    transitionInstructions = [].concat(...transitions.left, callback);
+                    transitionInstructions = [].concat(...transitions.left, callback, buffer);
                     break;
                 case 2:
-                    transitionInstructions = [].concat(...transitions.uturn, callback);
+                    transitionInstructions = [].concat(...transitions.uturn, callback, buffer);
                     break;
             }
             console.log(transitionInstructions);
             transitionInstructions.push(() => {
-                radius2 += 5;
+                if (py + maxFlashlightRadius / 2 > window.innerHeight / 2)
+                    py -= 20;
+                radius2 += 20;
                 if (radius2 > maxFlashlightRadius)
                     radius2 = maxFlashlightRadius;
                 radius1 = radius2 * .65;
-                return radius2 >= maxFlashlightRadius;
+                return radius2 >= maxFlashlightRadius && (py < window.innerHeight / 2);
             });
         }
 
