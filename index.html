@@ -24,6 +24,71 @@
         #test {
             color: #dd9c2283;
         }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+            width: 200px;
+            height: 200px;
+            padding: 5%;
+            margin: 0;
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            z-index: 10;
+
+        }
+
+        .d-pad img {
+            width: 100%;
+            height: 100%;
+            opacity: .5;
+        }
+
+        .up {
+            grid-row-start: 1;
+            grid-row-end: 2;
+            grid-column-start: 2;
+            grid-column-end: 3;
+        }
+
+        .left {
+            grid-row-start: 2;
+            grid-row-end: 3;
+            grid-column-start: 1;
+            grid-column-end: 2;
+        }
+
+        .right {
+            grid-row-start: 2;
+            grid-row-end: 3;
+            grid-column-start: 3;
+            grid-column-end: -1;
+        }
+
+        .down {
+            grid-row-start: 3;
+            grid-row-end: -1;
+            grid-column-start: 2;
+            grid-column-end: 3;
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        .btn-container {}
+
+        .btn-container {
+            width: 100px;
+            height: 100%;
+            padding: 5%;
+            margin: 0;
+            position: fixed;
+            top: 0px;
+            right: 0px;
+        }
     </style>
     <meta name="viewport" content=" user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,6 +100,12 @@
 
 <body>
     <p id="stuff"></p>
+    <section id="dpad" class="d-pad">
+        <img id="up" class="up" src="./assets/up.webp" alt="">
+        <img id="down" class="down" src="./assets/down.webp" alt="">
+        <img id="left" class="left" src="./assets/left_arrow.webp" alt="">
+        <img id="right" class="right" src="./assets/right_arrow.webp" alt="">
+    </section>
     <script type="module">
         import * as THREE from 'https://cdn.skypack.dev/three@0.132.2';
         import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/GLTFLoader.js';
@@ -109,6 +180,8 @@
         }
 
         let maxFlashlightRadius = 200;
+
+
         document.onkeydown = e => {
             if (inTransition)
                 return false;
@@ -116,32 +189,32 @@
                 case "ArrowUp":
                     playTransition(0, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
                         return true;
                     });
                     break;
                 case "ArrowDown":
                     playTransition(2, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
                         return true;
                     });
                     break;
                 case "ArrowLeft":
                     playTransition(3, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
                         return true;
                     });
                     break;
                 case "ArrowRight":
                     playTransition(1, () => {
                         console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random()*GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random()*GameAssets.length)]);
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
                         return true;
                     });
                     break;
@@ -326,8 +399,8 @@
 
         }
 
-        const shrinkFlashlight = (amount = 50, rate = 20) => {
-            if (radius1 > 50) {
+        const shrinkFlashlight = (amount = 10, rate = 20) => {
+            if (radius1 >= 20) {
                 radius1 -= rate;
                 radius2 -= rate;
             } else {
@@ -408,13 +481,13 @@
             }
             console.log(transitionInstructions);
             transitionInstructions.push(() => {
-                if (py + maxFlashlightRadius / 2 > window.innerHeight / 2)
-                    py -= 20;
+                // if (py + maxFlashlightRadius / 2 > window.innerHeight / 2)
+                //     py -= 20;
                 radius2 += 20;
                 if (radius2 > maxFlashlightRadius)
                     radius2 = maxFlashlightRadius;
                 radius1 = radius2 * .65;
-                return radius2 >= maxFlashlightRadius && (py < window.innerHeight / 2);
+                return radius2 >= maxFlashlightRadius;
             });
         }
 
@@ -424,6 +497,8 @@
         const cameraInPosition = () => (offsetX > cameraX - .05) && (offsetX < cameraX + .05);
         function animate() {
             requestAnimationFrame(animate);
+            clearScreen();
+           drawBlock();
             if (refeshing)
                 return;
             if (!cameraInPosition()) {
@@ -449,10 +524,33 @@
                 inTransition = false;
             camera.position.lerp(targetPosition, smoothness);
             renderer.render(scene, camera);
-            clearScreen();
-            drawBlock();
         }
         animate();
+
+        document.getElementById("up").addEventListener("touchend", () => playTransition(0, () => {
+            console.log("Moved Right!");
+            console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            return true;
+        }), false)
+        document.getElementById("down").addEventListener("touchend", () => playTransition(2, () => {
+            console.log("Moved Right!");
+            console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            return true;
+        }), false)
+        document.getElementById("left").addEventListener("touchend", () => playTransition(3, () => {
+            console.log("Moved Right!");
+            console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            return true;
+        }), false)
+        document.getElementById("right").addEventListener("touchend", () => playTransition(1, () => {
+            console.log("Moved Right!");
+            console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            return true;
+        }), false)
 
         // const geometry = new THREE.BoxGeometry();
         // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
