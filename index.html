@@ -120,262 +120,36 @@
         // import { DRACOLoader  } from 'https://cdn.skypack.dev/three@0.132.2/examples/jsm/loaders/DRACOLoader.js';
 
 
+
+        //init
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-
         let CTX = document.getElementById("screen").getContext("2d");
         console.log(document.getElementById("screen"), CTX);
         CTX.canvas.width = window.innerWidth;
         CTX.canvas.height = window.innerHeight;
+        camera.add(new THREE.PointLight(0xdd9c22, .3));
 
         let inTransition = false;
-
         let offsetY = 0;
         let rotationX = 0;
         let px = window.innerWidth / 2;
         let py = window.innerHeight / 2;
-
-        function clearScreen() {
-            CTX.clearRect(0, 0, window.innerWidth, window.innerHeight);
-        }
-
-        let radius1 = 130;
-        let radius2 = 200;
-        function drawBlock() {
-            //var gradient = CTX.createRadialGradient(px, py, 50, px - 50, py - 50, 70);
-            var gradient = CTX.createRadialGradient(
-                px + 10, py + 10, radius1,
-                px, py, radius2
-            );
-
-
-
-            // Add three color stops
-            gradient.addColorStop(0, 'transparent');
-
-            // gradient.addColorStop(.9, 'white');
-            gradient.addColorStop(1, '#000000fe');
-
-            // Set the fill style and draw a rectangle
-            CTX.fillStyle = gradient;
-            CTX.fillRect(0, 0, window.innerWidth, window.innerHeight);
-        }
-
-        // let light = new THREE.HemisphereLight(0xffeeb1, 0x080820, .01);
-        // scene.add(light);
-        // light.position.copy(camera.position); // and reset spotlight position if camera moves
-
-        /////////
-
-
+        let flashLightInnerRadius = 130;
+        let flashLightOutterRadius = 200;
         let refeshing = false;
-        camera.add(new THREE.PointLight(0xdd9c22, .3));
-        function refeshScene() {
-            refeshing = true;
-            scene.clear();
-            renderer.render(scene, camera);
-            camera.position.set(0, 0, 0)
-            targetPosition = camera.position.clone();
-            scene.add(camera);
-            offsetX = 0;
-            cameraX = 0;
-            refeshing = false;
-
-        }
-
         let maxFlashlightRadius = 200;
-
-
-        document.onkeydown = e => {
-            if (inTransition)
-                return false;
-            switch (e.code) {
-                case "ArrowUp":
-                    playTransition(0, () => {
-                        console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
-                        return true;
-                    });
-                    break;
-                case "ArrowDown":
-                    playTransition(2, () => {
-                        console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
-                        return true;
-                    });
-                    break;
-                case "ArrowLeft":
-                    playTransition(3, () => {
-                        console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
-                        return true;
-                    });
-                    break;
-                case "ArrowRight":
-                    playTransition(1, () => {
-                        console.log("Moved Right!");
-                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-                        renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
-                        return true;
-                    });
-                    break;
-            }
-            console.log(rotationX, offsetY);
-
-        }
-
+        let offsetX = 0;
+        let cameraX = 0;
         let targetPosition = camera.position.clone();
-        function MoveCameraToPoint(x, y, z) {
-            targetPosition = camera.position.clone();
-            targetPosition.z = -z;
-            targetPosition.y = -y;
-            targetPosition.x = -x;
-        }
+        const cameraInPosition = () => (offsetX > cameraX - .05) && (offsetX < cameraX + .05);
         let turnRight = false;
         let turnLeft = false;
-        document.addEventListener("touchend", () => {
-            turnRight = false;
-            turnLeft = false;
-        }, false);
-        document.addEventListener("touchmove", (e) => {
-            if (inTransition)
-                return false;
-            let X = e.touches[0].clientX;
-            let Y = e.touches[0].clientY;
-            px = X;
-            py = Y;
-            if (!cameraInPosition())
-                return;
-            let w = (window.innerWidth);
-            let h = (window.innerHeight);
-
-
-            rotationX = (X / w) - .5;
-            //offsetY = (Y / (h / 2)) - .5;   
-            console.log((X / w));
-            console.log(rotationX, offsetY);
-
-
-
-
-        }, false);
-        // const dracoLoader = new DRACOLoader();
-        // dracoLoader.setDecoderPath('https://cdn.skypack.dev/three@0.132.2/examples/js/libs/draco/');
-        // loader.setDRACOLoader(dracoLoader);
-        function load3DAsset(asset) {
-            return new Promise((res, rej) => {
-                loader.load(asset, function (gltf) {
-                    res(gltf)
-                }, undefined, function (error) {
-                    console.error(error);
-                    rej(error);
-
-                });
-
-            });
-        }
-        function removeEntity(object) {
-            console.log("Removed!");
-            scene.clear();
-            // renderer.render(scene, gltf.cameras[0]);
-        }
-
-        function renderScene(gltf) {
-            refeshScene();
-            scene.add(gltf.scene);
-            console.log(gltf.cameras);
-            gltf.scene.traverse(n => {
-                if (n.isMesh) {
-                    n.castShadow = true;
-                    n.receiveShadow = true;
-                    if (n.material.map) n.material.map.anisotropy = 16;
-                }
-            });
-            gltf.scene.position.y = -1;
-            gltf.scene.position.x = 0;
-            gltf.scene.position.z = 1;
-            //renderer.render(scene, gltf.cameras[0]);
-        }
-
+        let transitionInstructions = [];
         let slot = 0;
-        const manager = new THREE.LoadingManager();
-
-        let log = (stuff) => {
-            document.getElementById("stuff").innerHTML = stuff;
-        }
-        manager.onStart = function (url, itemsLoaded, itemsTotal) {
-
-            log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
-
-        };
-
-        manager.onLoad = function () {
-
-            log('Loading complete!');
-
-        };
-
-
-        manager.onProgress = function (url, itemsLoaded, itemsTotal) {
-
-            log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
-
-        };
-
-        manager.onError = function (url) {
-
-            log('There was an error loading ' + url);
-
-        };
-        const loader = new GLTFLoader(manager);
-
-        let GameAssets = [];
-        Promise.all([
-            "./4w.gltf",
-            "./dead.gltf",
-            "./right.gltf",
-            "./straight.gltf"
-        ].map(load3DAsset)).then((assets) => {
-
-            console.log("DONE!!!")
-            assets = assets.map((gltf, index) => {
-                gltf.name = index + "obj";
-                return gltf;
-            });
-            GameAssets = [].concat(...assets);
-            console.log(assets[slot])
-            renderScene(assets[slot]);
-            let update = () => {
-                setTimeout(() => {
-                    console.log("update");
-                    if (slot >= assets.length)
-                        slot = 0;
-                    removeEntity(assets[slot]);
-                    renderScene(assets[slot++]);
-                    update();
-                }, 5000);
-            }
-            renderScene(assets[slot++]);
-
-            // update();
-
-        }, console.log);
-
-
-        function reachedPoint(pos, pos2, epsilon = Number.EPSILON) {
-            console.log(pos, pos2)
-            return (
-                (Math.ceil(Math.abs(pos.x) * 100) / 100 - Math.ceil(Math.abs(pos2.x) * 100) / 100 <= 0.005) &&
-                (Math.ceil(Math.abs(pos.z) * 100) / 100 - Math.ceil(Math.abs(pos2.z) * 100) / 100 <= 0.005));
-        }
-
 
         let delayOver = false;
         let setDelay = false;
@@ -400,28 +174,27 @@
 
         const focousOnFloor = (point = maxFlashlightRadius / 2) => {
 
-
             if (py < window.innerHeight - point)
                 py += 10;
             return (py > window.innerHeight - point) && shrinkFlashlight(70, 50)
 
         }
 
-        const shrinkFlashlight = (amount = 10, rate = 20) => {
-            if (radius1 >= 20) {
-                radius1 -= rate;
-                radius2 -= rate;
+        const shrinkFlashlight = (amount = 10, rate = 5) => {
+            if (flashLightInnerRadius >= 20) {
+                flashLightInnerRadius -= rate;
+                flashLightOutterRadius -= rate;
             } else {
-                radius1--;
-                radius2--;
+                flashLightInnerRadius--;
+                flashLightOutterRadius--;
             }
-            if (radius2 < 0) {
-                radius2 = 0;
+            if (flashLightOutterRadius < 0) {
+                flashLightOutterRadius = 0;
             }
-            if (radius1 < 0) {
-                radius1 = 0;
+            if (flashLightInnerRadius < 0) {
+                flashLightInnerRadius = 0;
             }
-            return radius1 <= amount
+            return flashLightInnerRadius <= amount
         };
 
         const transitions = {
@@ -467,9 +240,152 @@
             ],
         };
 
-        let transitionInstructions = [];
+        function reachedPoint(pos, pos2, epsilon = Number.EPSILON) {
+            console.log(pos, pos2)
+            return (
+                (Math.ceil(Math.abs(pos.x) * 100) / 100 - Math.ceil(Math.abs(pos2.x) * 100) / 100 <= 0.005) &&
+                (Math.ceil(Math.abs(pos.z) * 100) / 100 - Math.ceil(Math.abs(pos2.z) * 100) / 100 <= 0.005));
+        }
 
-        function playTransition(dir, callback) {
+
+        function clearScreen() {
+            CTX.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        }
+
+        function renderFlashLight() {
+            //var gradient = CTX.createRadialGradient(px, py, 50, px - 50, py - 50, 70);
+            var gradient = CTX.createRadialGradient(
+                px + 10, py + 10, flashLightInnerRadius,
+                px, py, flashLightOutterRadius
+            );
+            gradient.addColorStop(0, 'transparent');
+            gradient.addColorStop(1, '#000000fe');
+            CTX.fillStyle = gradient;
+            CTX.fillRect(0, 0, window.innerWidth, window.innerHeight);
+        }
+
+        function refreshMazeSection() {
+            refeshing = true;
+            scene.clear();
+            renderer.render(scene, camera);
+            camera.position.set(0, 0, 0)
+            targetPosition = camera.position.clone();
+            scene.add(camera);
+            offsetX = 0;
+            cameraX = 0;
+            refeshing = false;
+        }
+
+        function MoveCameraToPoint(x, y, z) {
+            targetPosition = camera.position.clone();
+            targetPosition.z = -z;
+            targetPosition.y = -y;
+            targetPosition.x = -x;
+        }
+
+        function load3DAsset(asset) {
+            return new Promise((res, rej) => {
+                loader.load(asset, function (gltf) {
+                    res(gltf)
+                }, undefined, function (error) {
+                    console.error(error);
+                    rej(error);
+
+                });
+
+            });
+        }
+        function removeEntity(object) {
+            console.log("Removed!");
+            scene.clear();
+            // renderer.render(scene, gltf.cameras[0]);
+        }
+
+        function loadMazeSection(gltf) {
+            refreshMazeSection();
+            scene.add(gltf.scene);
+            console.log(gltf.cameras);
+            gltf.scene.traverse(n => {
+                if (n.isMesh) {
+                    n.castShadow = true;
+                    n.receiveShadow = true;
+                    if (n.material.map) n.material.map.anisotropy = 16;
+                }
+            });
+            gltf.scene.position.y = -1;
+            gltf.scene.position.x = 0;
+            gltf.scene.position.z = 1;
+            //renderer.render(scene, gltf.cameras[0]);
+        }
+
+        const manager = new THREE.LoadingManager();
+
+        let log = (stuff) => {
+            document.getElementById("stuff").innerHTML = stuff;
+        }
+        manager.onStart = function (url, itemsLoaded, itemsTotal) {
+
+            log('Started loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+
+        };
+
+        manager.onLoad = function () {
+
+            log('Loading complete!');
+
+        };
+
+        manager.onProgress = function (url, itemsLoaded, itemsTotal) {
+
+            log('Loading file: ' + url + '.\nLoaded ' + itemsLoaded + ' of ' + itemsTotal + ' files.');
+
+        };
+
+        manager.onError = function (url) {
+
+            log('There was an error loading ' + url);
+
+        };
+
+        const loader = new GLTFLoader(manager);
+
+        let GameAssets = [];
+
+        Promise.all([
+            "./4w.gltf",
+            "./dead.gltf",
+            "./right.gltf",
+            "./straight.gltf"
+        ].map(load3DAsset)).then((assets) => {
+
+            console.log("DONE!!!")
+            assets = assets.map((gltf, index) => {
+                gltf.name = index + "obj";
+                return gltf;
+            });
+            GameAssets = [].concat(...assets);
+            console.log(assets[slot])
+            loadMazeSection(assets[slot]);
+            let update = () => {
+                setTimeout(() => {
+                    console.log("update");
+                    if (slot >= assets.length)
+                        slot = 0;
+                    removeEntity(assets[slot]);
+                    loadMazeSection(assets[slot++]);
+                    update();
+                }, 5000);
+            }
+            loadMazeSection(assets[slot++]);
+
+            // update();
+
+        }, console.log);
+
+
+        
+
+        function transitionInDirection(dir, callback) {
             let buffer = () => {
                 return delayed(1500);
             };
@@ -491,22 +407,23 @@
             transitionInstructions.push(() => {
                 // if (py + maxFlashlightRadius / 2 > window.innerHeight / 2)
                 //     py -= 20;
-                radius2 += 20;
-                if (radius2 > maxFlashlightRadius)
-                    radius2 = maxFlashlightRadius;
-                radius1 = radius2 * .65;
-                return radius2 >= maxFlashlightRadius;
+                flashLightOutterRadius += 12;
+                flashLightInnerRadius = flashLightInnerRadius += 12;
+                if (flashLightOutterRadius > maxFlashlightRadius) {
+
+                    flashLightInnerRadius = maxFlashlightRadius - 70;
+                    flashLightOutterRadius = maxFlashlightRadius;
+                }
+                return flashLightOutterRadius >= maxFlashlightRadius;
             });
         }
 
         // setTimeout(() => MoveCameraToPoint(0, 0, 2), 5000);
-        let offsetX = 0;
-        let cameraX = 0;
-        const cameraInPosition = () => (offsetX > cameraX - .05) && (offsetX < cameraX + .05);
-        function animate() {
-            requestAnimationFrame(animate);
+
+        function update() {
+            requestAnimationFrame(update);
             clearScreen();
-           drawBlock();
+            renderFlashLight();
             if (refeshing)
                 return;
             if (!cameraInPosition()) {
@@ -518,11 +435,7 @@
 
             camera.rotation.y = -rotationX + offsetX;
             camera.rotation.x = -offsetY - offsetY;
-            // light.position.set(
-            //     camera.position.x + 0,
-            //     camera.position.y + .5,
-            //     camera.position.z + 10,
-            // );
+
             if (transitionInstructions.length > 0) {
                 inTransition = true;
                 if (transitionInstructions[0]())
@@ -533,39 +446,96 @@
             camera.position.lerp(targetPosition, smoothness);
             renderer.render(scene, camera);
         }
-        animate();
+        update();
 
-        document.getElementById("up").addEventListener("touchend", () => playTransition(0, () => {
+
+        //EVENT LISTENERS
+
+        document.getElementById("up").addEventListener("touchend", () => transitionInDirection(0, () => {
             console.log("Moved Right!");
             console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
             return true;
         }), false)
-        document.getElementById("down").addEventListener("touchend", () => playTransition(2, () => {
+        document.getElementById("down").addEventListener("touchend", () => transitionInDirection(2, () => {
             console.log("Moved Right!");
             console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
             return true;
         }), false)
-        document.getElementById("left").addEventListener("touchend", () => playTransition(3, () => {
+        document.getElementById("left").addEventListener("touchend", () => transitionInDirection(3, () => {
             console.log("Moved Right!");
             console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
             return true;
         }), false)
-        document.getElementById("right").addEventListener("touchend", () => playTransition(1, () => {
+        document.getElementById("right").addEventListener("touchend", () => transitionInDirection(1, () => {
             console.log("Moved Right!");
             console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
-            renderScene(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+            loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
             return true;
         }), false)
 
-        // const geometry = new THREE.BoxGeometry();
-        // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        // const cube = new THREE.Mesh(geometry, material);
-        // scene.add(cube);
+        document.onkeydown = e => {
+            if (inTransition)
+                return false;
+            switch (e.code) {
+                case "ArrowUp":
+                    transitionInDirection(0, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+                        return true;
+                    });
+                    break;
+                case "ArrowDown":
+                    transitionInDirection(2, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+                        return true;
+                    });
+                    break;
+                case "ArrowLeft":
+                    transitionInDirection(3, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+                        return true;
+                    });
+                    break;
+                case "ArrowRight":
+                    transitionInDirection(1, () => {
+                        console.log("Moved Right!");
+                        console.log(GameAssets[Math.floor(Math.random() * GameAssets.length)])
+                        loadMazeSection(GameAssets[Math.floor(Math.random() * GameAssets.length)]);
+                        return true;
+                    });
+                    break;
+            }
+            console.log(rotationX, offsetY);
 
-        // camera.position.z = 5;
+        }
+
+        document.addEventListener("touchmove", (e) => {
+            if (inTransition)
+                return false;
+            let X = e.touches[0].clientX;
+            let Y = e.touches[0].clientY;
+            px = X;
+            py = Y;
+            if (!cameraInPosition())
+                return;
+            let w = (window.innerWidth);
+            let h = (window.innerHeight);
+
+
+            rotationX = (X / w) - .5;
+            //offsetY = (Y / (h / 2)) - .5;   
+            console.log((X / w));
+            console.log(rotationX, offsetY);
+
+        }, false);
     </script>
 </body>
 
